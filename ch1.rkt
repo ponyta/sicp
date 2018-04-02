@@ -84,16 +84,24 @@
 
 (define (new-if predicate then-clause else-clause)
   (cond [predicate then-clause]
-        [else else-clause])) ;; under new-if program never halts
+        [else else-clause]))
+;; under new-if program never halts because it evaluates both branches.
 
 ;; sub model
-(sqrt-iter 1.0 2)
-(new-if (good-enough? 1.0 2)
-        1.0
-        (sqrt-iter (improve 1.0 2) 2))
-(cond [(good-enough? 1.0 2) 1.0]
-      [else (sqrt-iter (improve 1.0 2) 2)])
-(cond [false 1.0]
-      [else (sqrt-iter (improve 1.0 2) 2)])
-(cond [else (sqrt-iter (improve 1.0 2) 2)])
-(sqrt-iter (improve 1.0 2) 2)
+; (sqrt-iter 1.0 2)
+; (new-if (good-enough? 1.0 2)
+;         1.0
+;         (sqrt-iter (improve 1.0 2) 2))
+; (cond [(good-enough? 1.0 2) 1.0]
+;       [else (sqrt-iter (improve 1.0 2) 2)])
+; (cond [false 1.0]
+;       [else (sqrt-iter (improve 1.0 2) 2)])
+; (cond [else (sqrt-iter (improve 1.0 2) 2)])
+; (sqrt-iter (improve 1.0 2) 2)
+; (new-if (good-enough? (improve 1.0 2) 2)
+;         (improve 1.0 2)
+;         (sqrt-iter (improve (improve 1.0 2) 2) 2))
+; ...
+; (sqrt-iter (improve (improve 1.0 2) 2) 2)
+
+;; 1.7
