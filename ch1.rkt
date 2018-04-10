@@ -22,10 +22,12 @@
          (else -1))
    (+ a 1)) ; 16
 
+
 ;; 1.2
 (/ (+ 5 4
       (- 2 (- 3 (+ 6 (/ 4 5)))))
    (* 3 (- 6 2) (- 2 7)))
+
 
 ;; 1.3
 (define (sq-sum x y)
@@ -40,11 +42,13 @@
          (sq-sum x y)]))
 (provide sum-large-sq)
 
+
 ;; 1.4
 (define (a-plus-abs-b a b)
   ((if (> b 0) + -) a b)) ; if b > 0, use the + operator, otherwise use the 0 op
 ;; hence this function returns a + |b|
 (provide a-plus-abs-b)
+
 
 ;; 1.5
 (define (p) (p)) ;; perverse
@@ -59,9 +63,10 @@
 ; ...
 ; e.t.c forever (program never halts)
 
+
 ;; 1.6
 (define (sqrt-iter guess x)
-  (new-if (good-enough? guess x)
+  (if (good-enough? guess x)
     guess
     (sqrt-iter (improve guess x) x)))
 
@@ -104,4 +109,45 @@
 ; ...
 ; (sqrt-iter (improve (improve 1.0 2) 2) 2)
 
+
 ;; 1.7
+; examples of bad sqrts
+(square 0.00004)
+(sqrt (square 0.00004))
+
+(square 2345823495723) ; big numbers aren't very affected actually because I guess my laptop is relatively fast.
+; I guess the algorithm converges fast enough
+(sqrt (square 2345823495723))
+
+(define (better-sqrt x)
+  (better-sqrt-iter 1.0 2.0 x))
+
+(define (better-good-enough? guess prev-guess x)
+  (< (abs (/ (- guess prev-guess) guess)) 0.01)) ; less than 1% change
+
+(define (better-sqrt-iter guess prev-guess x)
+  (if (better-good-enough? guess prev-guess x)
+    guess
+    (better-sqrt-iter (improve guess x) guess x)))
+
+(provide better-sqrt square)
+
+
+;; 1.8
+(define (cube x)
+  (* x x x))
+
+(define (cubert x)
+  (cubert-iter 1.0 x))
+
+(define (good-enough-cube? guess x)
+  (< (abs (- (cube guess) x)) 0.001))
+
+(define (improve-cube guess x)
+  (/ (+ (/ x (square guess)) (* 2 guess)) 3))
+
+(define (cubert-iter guess x)
+  (if (good-enough-cube? guess x) guess
+    (cubert-iter (improve-cube guess x) x)))
+
+(provide cube cubert)
