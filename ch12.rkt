@@ -83,8 +83,7 @@
 (provide f g h k)
 
 ;; 1.11
-
-; iterative fibonacci
+; iterative fibonacci (just for example)
 (define (fib n)
   (define (fib-helper a b count)
     (if (= count 0) b
@@ -101,6 +100,25 @@
                  (* 3 (f-rec (- n 3))))]))
 
 (define (f-iter n)
-  n)
+  (define (f-helper a b c count)
+    (if (= count 0) c
+      (f-helper (+ a
+                   (* 2 b)
+                   (* 3 c))
+                a b (- count 1))))
+  (f-helper 2 1 0 n))
 
 (provide fib f-rec f-iter)
+
+;; 1.12
+(define (pascal row col)
+  (if (or (= row col)
+          (= 1 col)) 1
+    (+ (pascal (- row 1) (- col 1))
+       (pascal (- row 1) col))))
+
+(provide pascal)
+
+;; 1.13
+; Done on paper
+
