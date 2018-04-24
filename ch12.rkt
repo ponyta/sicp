@@ -122,3 +122,84 @@
 ;; 1.13
 ; Done on paper
 
+;; 1.14
+(define (count-change amount)
+  (define (first-denomination kinds-of-coins)
+    (cond [(= kinds-of-coins 1) 1]
+          [(= kinds-of-coins 2) 5]
+          [(= kinds-of-coins 3) 10]
+          [(= kinds-of-coins 4) 25]
+          [(= kinds-of-coins 5) 50]))
+  (define (cc amount kinds-of-coins)
+    (cond [(= amount 0) 1] ; one way to make change for 0
+          [(or (< amount 0)
+               (= kinds-of-coins 0))
+           0] ; if negative amount or no types of coins left, there are no ways to make change
+          [else (+ (cc amount (- kinds-of-coins 1)) ; making change without using the first type of coin
+                   (cc (- amount (first-denomination kinds-of-coins)) ; making change for amount-(first type of coin) with all coins
+                       kinds-of-coins))]))
+  (cc amount 5))
+
+; Steps: for a constant increase in amount, given the increase is at least the
+; size of some coin denomination, we double the number of steps needed since
+; there needs to be an extra branch to count how many ways we can count change
+; with that extra coin.
+;
+; The maximum depth of the tree (space complexity) is proportional to the amount.
+; For this case of denominations, it is 5 (the number of denominations) plus
+; the amount divided by the smallest denomination. Since this relation is not
+; dependent on the actual denominations itself, this holds true regardless of
+; what kind of coins your system has. Thus count-change has a space complexity
+; that is linear in nature.
+
+(provide count-change)
+
+;; 1.15
+(define (cube x)
+  (* x x x))
+
+(define (p x)
+  (- (* 3 x)
+     (* 4 (cube x))))
+
+(define (sine angle)
+  (if (not (> (abs angle) 0.1))
+      angle
+      (p (sine (/ angle 3.0)))))
+
+(provide sine)
+
+; (sine 12.15)
+; p is applied n-1 times, where n is such that (12.15/3^n) < 0.1, or 6 times.
+; It also takes the same amount of space complexity
+;
+; Solving for n, we get:
+; 121.5 < 3^n
+; log(121.5)/log(3) < n
+; Thus n is proportional to log(angle), and has logarithmic complexity.
+
+;; 1.16
+(define (fast-expt b n) ; calculates b^n in an iterative, faster way
+  (define (square x)
+    (* x x))
+  (define (expt-iter b n acc)
+    (cond [(= n 0) acc]
+          [(even? n) (expt-iter
+                       (square b)
+                       (/ n 2)
+                       acc)]
+          [(odd? n) (expt-iter
+                      (square b)
+                      (/ (- n 1) 2)
+                      (* acc b))]))
+  (expt-iter b n 1))
+
+(provide fast-expt)
+
+;; 1.17
+(define (mult a b)
+  (define (double x)
+    (+ x x))
+  (define (halve x)
+    (/ x 2))
+  (
