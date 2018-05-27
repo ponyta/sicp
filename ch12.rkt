@@ -1,5 +1,8 @@
 #lang racket
 
+(define (square x)
+  (* x x))
+
 ;; 1.9
 ; apparently these are no longer part of the stdlib for racket
 (define (inc x)
@@ -180,8 +183,6 @@
 
 ;; 1.16
 (define (fast-expt b n) ; calculates b^n in an iterative, faster way
-  (define (square x)
-    (* x x))
   (define (expt-iter b n acc)
     (cond [(= n 0) acc]
           [(even? n) (expt-iter
@@ -197,9 +198,168 @@
 (provide fast-expt)
 
 ;; 1.17
+(define (double x)
+  (+ x x))
+(define (halve x)
+  (/ x 2))
 (define (mult a b)
-  (define (double x)
-    (+ x x))
-  (define (halve x)
-    (/ x 2))
-  (
+  (cond [(= b 0) 0]
+        [(even? b)
+         (mult (double a) (halve b))]
+        [(odd? b)
+         (+ (mult (double a) (halve (- b 1))) a)]))
+
+;; 1.18
+(define (mult-better a b)
+  (define (mult-iter a b acc)
+    (cond [(= b 0) acc]
+          [(even? b) (mult-iter (double a)
+                                (halve b)
+                                acc)]
+          [(odd? b) (mult-iter (double a)
+                               (halve (- b 1))
+                               (+ acc a))]))
+  (mult-iter a b 0))
+
+(provide mult mult-better)
+
+;; 1.19
+(define (fib-better n)
+  (fib-iter 1 0 0 1 n))
+
+(define (fib-iter a b p q count)
+  (cond [(= count 0) b]
+        [(even? count) (fib-iter a
+                                 b
+                                 (+ (* p p)
+                                    (* q q))
+                                 (+ (* q q)
+                                    (* 2 p q))
+                                 (/ count 2))]
+        [(odd? count) (fib-iter (+ (* b q)
+                                   (* a q)
+                                   (* a p))
+                                (+ (* b p)
+                                   (* a q))
+                                p
+                                q
+                                (- count 1))]))
+
+(provide fib-better)
+
+;; 1.21
+;; slow prime test
+(define (divides? a b)
+  (= (remainder b a) 0))
+
+(define (smallest-divisor n)
+  (find-divisor n 2))
+
+(define (next num)
+  (if (= num 2) (+ 1 num)
+    (+ 2 num)))
+
+(define (find-divisor n test-divisor)
+  (define (square x)
+    (* x x))
+  (cond ((> (square test-divisor) n)
+         n)
+        ((divides? test-divisor n)
+         test-divisor)
+        (else (find-divisor
+                n
+                (next test-divisor)))))
+
+(define (prime? n)
+  (= n (smallest-divisor n)))
+
+;; faster probabilistic prime test
+(define (expmod base exp m)
+  (cond ((= exp 0) 1)
+        ((even? exp)
+         (remainder
+           (square (expmod base (/ exp 2) m))
+           m))
+        (else
+          (remainder
+            (* base (expmod base (- exp 1) m))
+            m))))
+
+(define (fermat-test n)
+  (define (try-it a)
+    (= (expmod a n n) a))
+  (try-it (+ 1 (random (- n 1)))))
+
+(define (fast-prime? n times)
+  (cond ((= times 0) true)
+        ((fermat-test n)
+         (fast-prime? n (- times 1)))
+        (else false)))
+
+(provide smallest-divisor prime? fast-prime?)
+
+; 199 is prime
+; 1999 is prime
+; 19999 has 7 as the smallest divisor
+
+;; 1.22
+(define (timed-prime-test n)
+  (start-prime-test n (current-milliseconds)))
+(define (start-prime-test n start-time)
+  (if (fast-prime? n 10)
+    (report-prime n start-time)
+    #f))
+
+(define (report-prime prime start-time)
+  (display prime)
+  (display " *** ")
+  (display (- (current-milliseconds) start-time))
+  (newline))
+
+; searches for primes in [start, end]
+(define (search-for-primes start end)
+  (cond [(> start end) (display "DONE")]
+        [else (timed-prime-test start) (search-for-primes (+ start 1) end)]))
+
+(provide timed-prime-test search-for-primes)
+
+;; 1.23 done above
+;; 1.24 done above no difference (modern computers are too fast for these exercises..)
+;; 1.25 no, calculating the remainder grows exponentially as base^exp grows
+;;      whereas our expmod keeps the value logarithmically low
+;; 1.26 He has made two recursive calls; whereas before the interpreter would have
+;;      calculated the value once and squared it, now it is calculating it twice and
+;;      multiplying the answers exponentially increasing the amount of work done.
+;
+;; 1.27
+; Does the fermat test for ever a < n, a > 2 (a = 1 is obvious)
+(define (fermat-prime? n)
+  (define (test a)
+    (= (expmod a n n) a))
+  (define (test-fermat-prime a)
+    (cond [(>= a n) #t]
+          [(not (test a)) #f]
+          [else (test-fermat-prime (+ 1 a))]))
+  (test-fermat-prime 2))
+
+(provide fermat-prime?)
+
+; fails for carmichael numbers; try (fermat-prime? 41041); returns #t even though divisible by 7
+;
+; 1.28
+; miller-rabin test on n to see if n is prime or not.
+(define (miller-rabin n)
+  (define (expmod base exp m)
+    (cond ((= exp 0) 1)
+          ((even? exp)
+           (remainder
+             (square (expmod base (/ exp 2) m))
+             m))
+          (else
+            (remainder
+              (* base (expmod base (- exp 1) m))
+              m))))
+
+)
+
+(provide miller-rabin)
