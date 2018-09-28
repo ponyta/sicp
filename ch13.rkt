@@ -274,4 +274,83 @@
 (provide smooth n-smooth)
 
 ;; 1.45
+; return x^(1/n) or the n'th root of x.
 
+(define (average x y)
+  (/ (+ x y) 2))
+
+(define (average-damp f)
+  (lambda (x)
+    (average x (f x))))
+
+; sqrt example
+(define (sqrt x)
+  (fixed-point
+    (average-damp
+      (pow-fixed-func 2 x))
+    1.0))
+
+; returns x^y
+(define (power x y)
+  (if (= y 1) x
+    (* x (power x (- y 1)))))
+
+; returns a fixed func that should converge to the nth root of its parameter x
+; if average dampened enough.
+(define (pow-fixed-func n x)
+  (lambda (y)
+    (/ x (power y (- n 1)))))
+
+; returns a function that average damps f n times
+(define (n-average-damp n f)
+  ((repeated average-damp n) f))
+
+; for a given power, try average damping i times and try to find a fixed point function
+; WARNING: will infinite loop given too few dampenings.
+; n is the power of the root.
+; i is the number of times you wish to dampen the fixed point function.
+; x is the value you would like to try and calculate the n'th root of.
+(define (try-converge n i x)
+  (fixed-point
+    (n-average-damp i
+                    (pow-fixed-func n x))
+    1)) ; guess 1 initially
+
+;; after testing, i believe the pattern is that we must dampen log_2(n) times, where n
+;; is the n'th root we are trying to calculate.
+
+(define (nth-root n x)
+  (define dampenings (floor (/ (log n)
+                               (log 2))))
+  (fixed-point
+    ((repeated average-damp dampenings) (pow-fixed-func n x))
+    1.0))
+
+(provide average-damp nth-root fixed-point sqrt pow-fixed-func n-average-damp try-converge nth-root)
+
+;; 1.46
+
+(define (iterative-improve good-enough? improve)
+  (define (helper guess)
+    (if (good-enough? guess (improve guess))
+      (improve guess)
+      (helper (improve guess))))
+  helper)
+
+(define (new-fixed-point f initial-guess)
+  ((iterative-improve
+    (lambda (x y)
+      (if (< (abs (- x y)) 0.0001) #t
+        #f))
+    (lambda (guess)
+      (f guess)))  initial-guess))
+
+(define (new-sqrt x)
+  ((iterative-improve
+    (lambda (x y)
+      (if (< (abs (- x y)) 0.0001) #t
+        #f))
+    (lambda (guess)
+      (average guess (/ x guess))))  1.0))
+
+(provide iterative-improve new-fixed-point new-sqrt)
