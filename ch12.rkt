@@ -348,6 +348,7 @@
 ;
 ; 1.28
 ; miller-rabin test on n to see if n is prime or not.
+; fuck this question
 (define (miller-rabin n)
   (define (expmod base exp m)
     (cond ((= exp 0) 1)
@@ -359,7 +360,6 @@
             (remainder
               (* base (expmod base (- exp 1) m))
               m))))
-
 )
 
 (provide miller-rabin)

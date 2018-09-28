@@ -19,7 +19,7 @@
 (define (simpson-integral f a b n)
   (define h (/ (- b a) n))
   (define (y k)
-    (cond 
+    (cond
       [(or (= k n) (= k 0)) (f (+ a (* k h)))]
       [(odd? k) (* 4 (f (+ a (* k h))))]
       [else (* 2 (f (+ a (* k h))))]))
@@ -132,7 +132,7 @@
 
 (define (fixed-point f first-guess)
   (define (close-enough? v1 v2)
-    (< (abs (- v1 v2)) 
+    (< (abs (- v1 v2))
        tolerance))
   (define (try guess)
     #| (display guess) |#
@@ -152,7 +152,7 @@
 
 ;; 1.36
 ;; x -> log(1000)/log(x)
-#| (fixed-point |# 
+#| (fixed-point |#
 #|   (lambda (x) |#
 #|     (/ (log 1000) (log x))) |#
 #|   4) |#
@@ -225,7 +225,7 @@
        (* b x)
        c)))
 (define root-example (newtons-method (cubic 0 0 0) 1)) ; should be 0
-(provide root-example)
+(provide root-example cubic)
 
 ;; 1.41
 (define (double proc)
