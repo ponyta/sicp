@@ -219,10 +219,26 @@
 (define three (add-1 two))
 (define four (add-1 three))
 (define five (add-1 four))
+(define (test n)
+  ((n inc) 0))
 
 (define (add a b)
   (lambda (f)
     (lambda (x)
       ((a f) ((b f) x)))))
+
+
+(define (my-if x y z)
+  (x y z))
+
+(define (my-TRUE y z)
+  y)
+(define (my-FALSE y z) z)
+(define (my-AND p q)
+  (my-if p
+         (my-if q my-TRUE my-FALSE)
+         my-FALSE))
+
+(provide my-if my-TRUE my-FALSE)
 
 (provide add-1 zero one two three four five inc add)
