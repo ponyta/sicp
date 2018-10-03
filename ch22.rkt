@@ -385,12 +385,127 @@
 (provide fold-right fold-left)
 
 ; 2.39
+(define (push el lst)
+  (if (null? lst) (cons el empty)
+    (cons (car lst)
+          (push el (cdr lst)))))
+
 (define (fold-r-reverse sequence)
   (fold-right
-   (lambda (x y) (append x y)) empty sequence))
+   (lambda (x y) (push x y)) empty sequence))
 
 (define (fold-l-reverse sequence)
   (fold-left
-   (lambda (x y) (cons x y)) empty sequence))
+   (lambda (x y) (cons y x)) empty sequence))
 
 (provide fold-r-reverse fold-l-reverse)
+
+; 2.40
+
+(define (enumerate-interval a b)
+  (if (> a b) empty
+    (cons a (enumerate-interval (+ a 1) b))))
+
+(define (flatmap proc seq)
+  (accumulate append empty (map proc seq)))
+
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j)
+                    (list i j))
+                  (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+(require math/number-theory)
+
+(define (prime-sum? pair)
+  (prime? (+ (car pair)
+             (cadr pair))))
+
+(define (make-pair-sum pair)
+  (list (car pair)
+        (cadr pair)
+        (+ (car pair) (cadr pair))))
+
+(define (prime-sum-pairs n)
+  (map make-pair-sum
+       (filter
+         prime-sum?
+         (unique-pairs n))))
+
+(provide enumerate-interval flatmap unique-pairs prime-sum-pairs)
+
+; 2.41
+(define (unique-triples n)
+  (flatmap (lambda (i)
+             (flatmap (lambda (j)
+                        (map (lambda (k)
+                               (list i j k))
+                             (enumerate-interval 1 (- j 1))))
+                      (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+(define (triplets-under-n-sum n s)
+  (filter (lambda (triplet)
+            (= (accumulate + 0 triplet)
+               s)) (unique-triples n)))
+
+(provide unique-triples triplets-under-n-sum)
+
+; 2.42
+; eight-queens problem
+(define (queens board-size)
+  ; returns #t if el is in lst, #f otherwise
+  (define (exist? el lst)
+    (if (empty? lst) #f
+      (or (= el (car lst))
+          (exist? el (cdr lst)))))
+
+  (define (diagonal? pos positions)
+    (define (helper distance lst)
+      (cond
+        [(empty? lst) #f]
+        [(= (abs (- pos (car lst)))
+            distance) ; then they are diagonal
+         #t]
+        [else (helper (+ distance 1)
+                      (cdr lst))]))
+    (helper 1 positions))
+
+  (define (safe? positions)
+    (and (not (exist? (car positions) (cdr positions)))
+         (not (diagonal? (car positions) (cdr positions)))))
+
+  (define (adjoin-position new-row rest-of-queens)
+    (cons new-row rest-of-queens))
+
+  (define empty-board '())
+
+  ; returns all the ways to place queens on the first k columns
+  (define (queen-cols k)
+    (if (= k 0)
+      (list empty-board)
+      ; else
+      (filter
+        (lambda (positions)
+          (safe? positions))
+        (flatmap
+          (lambda (rest-of-queens)
+            (map (lambda (new-row)
+                   (adjoin-position
+                     new-row
+                     rest-of-queens))
+                 (enumerate-interval
+                   1
+                   board-size)))
+          (queen-cols (- k 1))))))
+
+  (queen-cols board-size))
+
+(provide queens)
+
+; 2.43
+; Because Louis Reasoner swapped the mappings, he has made the recursive call inside the inner map.
+; Thus we must generate a solution for every possible row adjoin.
+; Since there are n*n slots on the board, this increases the time n*n time.
+; If it takes T time to solve a board of n size, then now we must solve it n*n*T
