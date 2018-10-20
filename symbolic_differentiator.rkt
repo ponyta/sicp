@@ -29,13 +29,20 @@
 
 ; parses an exp and generates an unambigious product/sum
 ; e.g. (x + y * y) => (x + (y * y))
-(define (simplify exp)
-  (define (simp-subexp exp)
-    (list (simplify (car exp))
-          (cadr exp)
-          (simplify (cddr exp)))))
-  (if (> (length exp) 3)
-    (
+; (define (simplify exp)
+;   (define (simp-subexp exp)
+;     (list (simplify (car exp))
+;           (cadr exp)
+;           (simplify (cddr exp)))))
+;   (if (> (length exp) 3)
+;     (
+
+
+
+; if we know we gotta simplify
+; (define (simp exp)
+;   (if (eq? (cadr exp) *)
+;     (list exp (cadr exp) (caddr exp))
 
 (define (variable? x) (symbol? x))
 
@@ -59,8 +66,12 @@
 
 (define (addend s) (car s))
 
+(define (make-expression one two)
+  (cond
+        [(eq? (cadr x) '*) (make-product one two)]
+        [(eq? (cadr x) '+) (make-sum one two)]))
 (define (augend s)
-  (foldl make-sum 0 (cddr s)))
+  (foldl make-expression 0 (cddr s)))
 
 (define (make-product m1 m2)
   (cond ((or (=number? m1 0)
@@ -78,7 +89,7 @@
 (define (multiplier p) (car p))
 
 (define (multiplicand p)
-  (foldl make-product 1 (cddr p)))
+  (foldl make-expression 1 (cddr p)))
 
 (define (make-exponentiation base exponent)
   (cond [(and (number? base) (number? exponent))
